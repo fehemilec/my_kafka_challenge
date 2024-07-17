@@ -7,9 +7,9 @@ from kafka.errors import KafkaError
 import json
 
 from producer.my_producer import (
-    send_message,
     send_message_json,
     get_kafka_producer_client,
+    get_kafka_broker,
 )
 from utils.models import Order
 
@@ -23,13 +23,12 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         logging.info("Order %s", order)
 
         abs_path = Path(__file__).parent.parent.parent
-        print("Path: ", abs_path)
-        producer_client = get_kafka_producer_client(
-            host="localhost", port=9095, auth_required=True, certs_path=abs_path
-        )
+
+        broker = get_kafka_broker("1", auth_required=True)
+        producer_client = get_kafka_producer_client(abs_path, broker)
+
         send_message_json(producer_client, order)
 
-        # send_message(message="Hi broker 2", host="localhost", port=9094)
         status_code = 202
         message = {"message": "Order accepted"}
     except ValueError:

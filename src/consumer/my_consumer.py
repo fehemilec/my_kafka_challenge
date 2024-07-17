@@ -3,9 +3,9 @@ from kafka.consumer import KafkaConsumer
 from kafka.errors import KafkaError
 
 
-def get_kafka_consumer_client(host, port, certs_path, auth_requied=False):
+def get_kafka_consumer_client(host, port, certs_path, auth_required=False):
 
-    if auth_requied:
+    if auth_required:
         consumer = KafkaConsumer(
             "users",
             bootstrap_servers=[f"{host}:{port}"],
@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     try:
         consumer = get_kafka_consumer_client(
-            host="localhost", port=9093, certs_path=abs_path, auth_requied=True
+            host="localhost", port=9093, certs_path=abs_path, auth_required=True
         )
 
         for message in consumer:
