@@ -7,7 +7,7 @@ variables:
   - name: ResourceLocation
     value: "northeurope"
   - name: AdoServiceConnection
-    value: ""
+    value: "adoSpn"
 
 parameters:
   - name: ResourceGroupName
@@ -28,7 +28,7 @@ stages:
 
 
   - stage: "Deploy_to_dev"
-    displayName: "Deployto Dev"
+    displayName: "Deploy to Dev"
     jobs:
       - job: ""
         steps:
@@ -46,3 +46,47 @@ stages:
             env:
               RESOURCEGROUP: ${{ parameters.ResourceGroupName }}-${{ parameters.Environment }}
 
+          
+
+          - task: AzureCLI@2
+            displayName: Create template spec
+            retryCountOnTaskFailure: 10
+            inputs:
+              azureSubscription: ${{ variables.AdoServiceConnection }}
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -e
+                az --version
+                az ts create \
+                  --name Kafka-Infrastructure \
+                  --version "1.0.0" \
+                  --resource-group ${{ parameters.ResourceGroupName }} \
+                  --template-file "src/resources/arm-templates/mainTemplate.json" \
+                  --debug
+
+          
+          - task: AzureCLI@2
+            name: deployTemplateSpec
+            displayName: Deploy template spec
+            retryCountOnTaskFailure: 10
+            inputs:
+              azureSubscription: ${{ variables.AdoServiceConnection }}
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                set -e
+                az --version
+                az account show
+                id=`az ts show --name Kafka-Infrastructure --resource-group ${{ parameters.ResourceGroupName }} --version "1.0.0" --query "id"`
+                echo arm template spec id is $id
+
+                az deployment group create \
+                  --resource-group ${{ parameters.ResourceGroupName }} \
+                  --template-spec $id \
+                  --parameters \
+                  environment=${{ parameters.Environment }} \
+                  keyVaultName=${{ variables.AdoKeyVaultName }} \
+                  funcAppName=${{ variables.funcAppName }}
+
+          # Deploy Function Code to Function App ...
