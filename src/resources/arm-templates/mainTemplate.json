@@ -36,7 +36,7 @@
                     },
                     "environment": {
                         "value": "[parameters('environment')]"
-                    },
+                    }
                     }
                 }
     },
@@ -66,7 +66,7 @@
                     },
                     "location": {
                         "value": "[parameters('location')]"
-                    },
+                    }
 
                     }
                 }
@@ -95,7 +95,7 @@
                     },
                     "location": {
                         "value": "[parameters('location')]"
-                    },
+                    }
 
                     }
                 }
