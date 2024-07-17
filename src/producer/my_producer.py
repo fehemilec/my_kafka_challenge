@@ -49,7 +49,7 @@ def get_kafka_broker(broker_id, auth_required):
     brokers = {
         "1": Broker("localhost", 9093 if auth_required else 9092, auth_required),
         "2": Broker("localhost", 9095 if auth_required else 9094, auth_required),
-        "3": Broker("localhost", 9096 if auth_required else 9095, auth_required),
+        "3": Broker("localhost", 9097 if auth_required else 9096, auth_required),
     }
     return brokers[broker_id]
 
@@ -61,7 +61,7 @@ if __name__ == "__main__":
     try:
         abs_path = Path(__file__).parent.parent.parent
 
-        broker = get_kafka_broker(broker_id="1", auth_required=False)
+        broker = get_kafka_broker(broker_id="3", auth_required=False)
         producer_client = get_kafka_producer_client(abs_path, broker)
 
         send_message_json(

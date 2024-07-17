@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     try:
         consumer = get_kafka_consumer_client(
-            host="localhost", port=9093, certs_path=abs_path, auth_required=True
+            host="localhost", port=9097, certs_path=abs_path, auth_required=True
         )
 
         for message in consumer:
