@@ -1,0 +1,66 @@
+version: '3.1'
+
+services:
+
+  zookeeper:
+    image: wurstmeister/zookeeper
+    container_name: zookeeper
+    ports:
+      - 2181:2181
+
+  kafka-broker-1:
+    image: wurstmeister/kafka
+    container_name: kafka
+    ports:
+      - 9094:9094
+      - 9095:9095
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENERS: 'INTERNAL://:19095,EXTERNAL://:9094,SSL://:9095'
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:19095,EXTERNAL://localhost:9094,SSL://localhost:9095
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,SSL:SSL
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_SSL_KEYSTORE_LOCATION: '/certs/kafka.server.keystore.jks'
+      KAFKA_SSL_KEYSTORE_PASSWORD: 'fehemi'
+      KAFKA_SSL_KEY_PASSWORD: 'fehemi'
+      KAFKA_SSL_TRUSTSTORE_LOCATION: '/certs/kafka.server.truststore.jks'
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: 'fehemi'
+      SSL_CLIENT_AUTH: required
+      SSL-ENDPOINT-IDENTIFICATION-ALGORITHM:
+      KAFKA_CREATE_TOPICS: "users:3:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    
+    volumes:
+      - ./server_certs:/certs
+
+    depends_on:
+      - "zookeeper"
+
+
+  kafka-broker-2:
+    image: wurstmeister/kafka
+    container_name: kafka2
+    ports:
+      - 9098:9098
+      - 9099:9099
+    environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_LISTENERS: 'INTERNAL://:19099, EXTERNAL://:9098, SSL://:9099'
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka2:19099,EXTERNAL://localhost:9098, SSL://localhost:9099
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,SSL:SSL
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_SSL_KEYSTORE_LOCATION: '/certs/kafka.server.keystore.jks'
+      KAFKA_SSL_KEYSTORE_PASSWORD: 'fehemi'
+      KAFKA_SSL_KEY_PASSWORD: 'fehemi'
+      KAFKA_SSL_TRUSTSTORE_LOCATION: '/certs/kafka.server.truststore.jks'
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: 'fehemi'
+      SSL_CLIENT_AUTH: required
+      SSL-ENDPOINT-IDENTIFICATION-ALGORITHM:
+      #KAFKA_CREATE_TOPICS: "orders:3:1"
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    
+    volumes:
+      - ./server_certs:/certs
+      
+    depends_on:
+      - "zookeeper"

@@ -1,0 +1,151 @@
+version: '3.1'
+
+services:
+
+  # wbd_api:
+  #   build:
+  #     context: .
+  #     dockerfile: src/Dockerfile
+  #   container_name: api
+  #   hostname: api
+  #   ports:
+  #     - 7071:80
+
+
+  # kafka-create-topic:
+  #   image: wurstmeister/kafka
+  #   container_name: kafka-topic
+  #   command: [ "/bin/bash", "-c", "/topic/create-topic.sh" ]
+
+  #   environment:
+  #     TEST_TOPIC_NAME: orders
+    
+  #   volumes:
+  #     - type: bind
+  #       source: ./bin/create-topic.sh
+  #       target: /topic/create-topic.sh
+
+  #   init: true
+      
+  #   depends_on:
+  #     - "zookeeper"
+  #     - "kafka-broker-1"
+
+
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.4.4
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 22181:2181
+
+  kafka-1:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka-1
+    depends_on:
+      - zookeeper
+
+    ports:
+      - 9092:9092
+      - 9093:9093
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: SSL://kafka-1:19093,EXTERNAL://localhost:9092,EXTERNAL_SSL://localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SSL:SSL,EXTERNAL:PLAINTEXT,EXTERNAL_SSL:SSL
+      KAFKA_INTER_BROKER_LISTENER_NAME: SSL
+      KAFKA_SSL_KEYSTORE_FILENAME: kafka.server.keystore.jks
+      KAFKA_SSL_KEYSTORE_CREDENTIALS: mykey.sh
+      KAFKA_SSL_KEY_CREDENTIALS: mykey.sh
+      KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.server.truststore.jks
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: fehemi
+      SSL_CLIENT_AUTH: required
+      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
+      KAFKA_LISTENER_NAME_INTERNAL_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM:
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+    volumes:
+      - ./server_certs:/etc/kafka/secrets
+
+  
+  kafka-2:
+    image: confluentinc/cp-kafka:7.4.4
+    container_name: kafka-2
+    depends_on:
+      - zookeeper
+
+    ports:
+      - 9094:9094
+      - 9095:9095
+    environment:
+      environment:
+      KAFKA_BROKER_ID: 2
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: SSL://kafka-2:19095,EXTERNAL://localhost:9094,EXTERNAL_SSL://localhost:9095
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SSL:SSL,EXTERNAL:PLAINTEXT,EXTERNAL_SSL:SSL
+      KAFKA_INTER_BROKER_LISTENER_NAME: SSL
+      KAFKA_SSL_KEYSTORE_FILENAME: kafka.server.keystore.jks
+      KAFKA_SSL_KEYSTORE_CREDENTIALS: mykey.sh
+      KAFKA_SSL_KEY_CREDENTIALS: mykey.sh
+      KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.server.truststore.jks
+      KAFKA_SSL_TRUSTSTORE_PASSWORD: fehemi
+      SSL_CLIENT_AUTH: required
+      KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
+      KAFKA_LISTENER_NAME_INTERNAL_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM:
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+    volumes:
+      - ./server_certs:/etc/kafka/secrets
+
+
+  # kafka-3:
+  #   image: confluentinc/cp-kafka:7.4.4
+  #   container_name: kafka-3
+  #   depends_on:
+  #     - zookeeper
+
+  #   ports:
+  #     - 9096:9096
+  #     - 9097:9097
+  #   environment:
+  #     environment:
+  #     KAFKA_BROKER_ID: 3
+  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+  #     KAFKA_ADVERTISED_LISTENERS: SSL://kafka-3:19097,EXTERNAL://localhost:9096,EXTERNAL_SSL://localhost:9097
+  #     KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SSL:SSL,EXTERNAL:PLAINTEXT,EXTERNAL_SSL:SSL
+  #     KAFKA_INTER_BROKER_LISTENER_NAME: SSL
+  #     KAFKA_SSL_KEYSTORE_FILENAME: kafka.server.keystore.jks
+  #     KAFKA_SSL_KEYSTORE_CREDENTIALS: mykey.sh
+  #     KAFKA_SSL_KEY_CREDENTIALS: mykey.sh
+  #     KAFKA_SSL_TRUSTSTORE_LOCATION: /etc/kafka/secrets/kafka.server.truststore.jks
+  #     KAFKA_SSL_TRUSTSTORE_PASSWORD: fehemi
+  #     SSL_CLIENT_AUTH: required
+  #     KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
+  #     KAFKA_LISTENER_NAME_INTERNAL_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM:
+  #     KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  #   volumes:
+  #     - ./server_certs:/etc/kafka/secrets
+
+
+  kafka-init:
+    image: confluentinc/cp-kafka:7.4.4
+    container_name: kafka_init
+    #command: [ "sh", "-c", "/etc/kafka/topic/kafka-topics.sh --create --topic orders --bootstrap-server localhost:9092" ]
+    command: [ "sh", "/etc/kafka/topic/create-topic.sh"]
+    environment:
+      TEST_TOPIC_NAME: orders
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    volumes:
+      - ./server_certs:/etc/kafka/secrets
+      - type: bind
+        source: ./bin/create-topic.sh
+        target: /etc/kafka/topic/create-topic.sh
+    init: true
+    
+    depends_on:
+      kafka-1:
+        condition: service_started

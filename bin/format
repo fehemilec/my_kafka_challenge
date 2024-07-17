@@ -1,0 +1,4 @@
+#!/bin/bash
+
+docker run  --rm --volume $(pwd):/app --workdir /app pyfound/black:latest_release black .
+

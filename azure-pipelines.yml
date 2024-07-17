@@ -1,0 +1,48 @@
+
+pool:
+  vmImage: ubuntu-latest
+
+
+variables:
+  - name: ResourceLocation
+    value: "northeurope"
+  - name: AdoServiceConnection
+    value: ""
+
+parameters:
+  - name: ResourceGroupName
+    type: string
+  - name: Environment
+
+
+
+stages:
+  - stage: "Code_analysis"
+    displayName: "Code Analysis"
+    jobs:
+      - job: "RunBlackFormat"
+        steps:
+          - bash: |
+              ./bin/format
+            displayName: Format code check
+
+
+  - stage: "Deploy_to_dev"
+    displayName: "Deployto Dev"
+    jobs:
+      - job: ""
+        steps:
+          - task: AzureCLI@2
+            displayName: Create resource group
+            retryCountOnTaskFailure: 10
+            inputs:
+              azureSubscription: ${{ variables.AdoServiceConnection }}
+              scriptType: bash
+              scriptLocation: inlineScript
+              inlineScript: |
+                az group create \
+                  --name ${{ parameters.ResourceGroupName }} \
+                  --location ${{ variables.ResourceLocation }}
+            env:
+              RESOURCEGROUP: ${{ parameters.ResourceGroupName }}-${{ parameters.Environment }}
+

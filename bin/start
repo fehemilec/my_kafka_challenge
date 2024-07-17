@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e
+
+exec docker compose --project-name kafka-project up --build --remove-orphans --renew-anon-volumes --force-recreate ${*}
