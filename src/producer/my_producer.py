@@ -61,7 +61,7 @@ if __name__ == "__main__":
     try:
         abs_path = Path(__file__).parent.parent.parent
 
-        broker = get_kafka_broker(broker_id="3", auth_required=True)
+        broker = get_kafka_broker(broker_id="1", auth_required=True)
         print("Sending data package to Broker on:", broker.host, broker.port)
         producer_client = get_kafka_producer_client(abs_path, broker)
 

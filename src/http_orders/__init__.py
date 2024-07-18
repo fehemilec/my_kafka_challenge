@@ -36,6 +36,6 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
         message = "Invalid Input"
     except KafkaError as e:
         status_code = 412
-        message = e
+        message = {"message": f"Error establishing connection to Kafka Broker: {e}"}
 
     return func.HttpResponse(json.dumps(message), status_code=status_code)
