@@ -20,6 +20,9 @@ services:
       ZOOKEEPER_TICK_TIME: 2000
     ports:
       - 22181:2181
+    
+    networks: 
+      - kafka_network
 
   kafka-1:
     image: confluentinc/cp-kafka:latest
@@ -30,6 +33,9 @@ services:
     ports:
       - 9092:9092
       - 9093:9093
+    
+    networks: 
+      - kafka_network
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -52,7 +58,7 @@ services:
 
   
   kafka-2:
-    image: confluentinc/cp-kafka:7.4.4
+    image: confluentinc/cp-kafka:latest
     container_name: kafka-2
     depends_on:
       - zookeeper
@@ -60,6 +66,9 @@ services:
     ports:
       - 9094:9094
       - 9095:9095
+    
+    networks: 
+      - kafka_network
     environment:
       environment:
       KAFKA_BROKER_ID: 2
@@ -81,7 +90,7 @@ services:
 
 
   kafka-3:
-    image: confluentinc/cp-kafka:7.4.4
+    image: confluentinc/cp-kafka:latest
     container_name: kafka-3
     depends_on:
       - zookeeper
@@ -89,6 +98,8 @@ services:
     ports:
       - 9096:9096
       - 9097:9097
+    networks: 
+      - kafka_network
     environment:
       environment:
       KAFKA_BROKER_ID: 3
@@ -109,22 +120,23 @@ services:
       - ./server_certs:/etc/kafka/secrets
 
 
-  # kafka-init:
-  #   image: confluentinc/cp-kafka:7.4.4
-  #   container_name: kafka_init
-  #   #command: [ "sh", "-c", "/bin/kafka-topics --create --topic orders --bootstrap-server kafka-1:9092" ]
-  #   #command: sh -c "sleep 15 && /bin/kafka-topics --create --topic orders --bootstrap-server kafka-1:9092"
-  #   command: [ "sh", "/etc/kafka/topic/create-topic.sh"]
-  #   environment:
-  #     TEST_TOPIC_NAME: orders
-  #     KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-  #   volumes:
-  #     - ./server_certs:/etc/kafka/secrets
-  #     - type: bind
-  #       source: ./bin/create-topic.sh
-  #       target: /etc/kafka/topic/create-topic.sh
-  #   init: true
-    
-  #   depends_on:
-  #     kafka-1:
-  #       condition: service_started
+  kafka-init:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka_init
+    #command: [ "sh", "-c", "/create-topic.sh" ]
+    entrypoint: ["sh","/create-topic.sh"]
+    environment:
+      TEST_TOPIC_NAME: orders
+
+    networks:
+      - kafka_network
+    volumes:
+      - type: bind
+        source: ./bin/create-topic.sh
+        target: /create-topic.sh
+    init: true
+
+
+networks:
+  kafka_network:
+    name: kafka_docker

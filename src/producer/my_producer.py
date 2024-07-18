@@ -67,7 +67,7 @@ if __name__ == "__main__":
 
         send_message_json(
             producer_client=producer_client,
-            order={"orderId": "1920", "price": "109.98"},
+            order={"orderId": "1920", "items": 3, "price": "123.98"},
         )
         print("Message sent")
     except KafkaError as e:
