@@ -32,7 +32,7 @@ def get_kafka_producer_client(certs_path, broker: Broker):
 
 def send_message_json(producer_client, order):
 
-    producer_client.send("users", order)
+    producer_client.send("orders", order)
     # Ensure all messages are sent before closing the producer
     producer_client.flush()
 
@@ -61,12 +61,13 @@ if __name__ == "__main__":
     try:
         abs_path = Path(__file__).parent.parent.parent
 
-        broker = get_kafka_broker(broker_id="3", auth_required=False)
+        broker = get_kafka_broker(broker_id="3", auth_required=True)
+        print("Sending data package to Broker on:", broker.host, broker.port)
         producer_client = get_kafka_producer_client(abs_path, broker)
 
         send_message_json(
             producer_client=producer_client,
-            order={"orderId": "1920", "price": "298.98"},
+            order={"orderId": "1920", "price": "109.98"},
         )
         print("Message sent")
     except KafkaError as e:

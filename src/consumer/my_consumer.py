@@ -7,7 +7,7 @@ def get_kafka_consumer_client(host, port, certs_path, auth_required=False):
 
     if auth_required:
         consumer = KafkaConsumer(
-            "users",
+            "orders",
             bootstrap_servers=[f"{host}:{port}"],
             security_protocol="SSL",
             ssl_check_hostname=False,
@@ -17,7 +17,7 @@ def get_kafka_consumer_client(host, port, certs_path, auth_required=False):
             ssl_password="fehemi",
         )
     else:
-        consumer = KafkaConsumer("users", bootstrap_servers=[f"{host}:{port}"])
+        consumer = KafkaConsumer("orders", bootstrap_servers=[f"{host}:{port}"])
     return consumer
 
 
@@ -27,7 +27,7 @@ if __name__ == "__main__":
 
     try:
         consumer = get_kafka_consumer_client(
-            host="localhost", port=9097, certs_path=abs_path, auth_required=True
+            host="localhost", port=9093, certs_path=abs_path, auth_required=True
         )
 
         for message in consumer:
