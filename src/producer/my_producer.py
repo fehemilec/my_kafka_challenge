@@ -53,8 +53,8 @@ def send_message(message, host, port):
 def get_kafka_broker(broker_id, auth_required):
     brokers = {
         "1": Broker("kafka-1", 9093 if auth_required else 9092, auth_required),
-        "2": Broker("localhost", 9095 if auth_required else 9094, auth_required),
-        "3": Broker("localhost", 9097 if auth_required else 9096, auth_required),
+        "2": Broker("kafka-2", 9095 if auth_required else 9094, auth_required),
+        "3": Broker("kafka-3", 9097 if auth_required else 9096, auth_required),
     }
     return brokers[broker_id]
 
