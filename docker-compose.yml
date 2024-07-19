@@ -2,14 +2,17 @@ version: '3.1'
 
 services:
 
-  # wbd_api:
-  #   build:
-  #     context: .
-  #     dockerfile: src/Dockerfile
-  #   container_name: api
-  #   hostname: api
-  #   ports:
-  #     - 7071:80
+  wbd_api:
+    build:
+      context: .
+      dockerfile: src/Dockerfile
+    container_name: api
+    hostname: api
+    ports:
+      - 7071:80
+    
+    networks: 
+      - kafka_network
 
 
   zookeeper:
@@ -39,7 +42,8 @@ services:
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: SSL://kafka-1:19093,EXTERNAL://localhost:9092,EXTERNAL_SSL://localhost:9093
+      #KAFKA_LISTENERS: EXTERNAL://:9092,EXTERNAL_SSL://:9093
+      KAFKA_ADVERTISED_LISTENERS: SSL://kafka-1:19093,EXTERNAL://kafka-1:9092,EXTERNAL_SSL://kafka-1:9093
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SSL:SSL,EXTERNAL:PLAINTEXT,EXTERNAL_SSL:SSL
       KAFKA_INTER_BROKER_LISTENER_NAME: SSL
       KAFKA_SSL_KEYSTORE_FILENAME: kafka.server.keystore.jks
@@ -50,11 +54,26 @@ services:
       SSL_CLIENT_AUTH: required
       KAFKA_SSL_ENDPOINT_IDENTIFICATION_ALGORITHM: ""
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-      KAFKA_CREATE_TOPICS: "orders:1:3"
+      #KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      #KAFKA_CREATE_TOPICS: "orders:1:3"
 
     volumes:
-      - ./server_certs:/etc/kafka/secrets
+      - ./src/server_certs:/etc/kafka/secrets
+
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "kafka-topics",
+          "--bootstrap-server",
+          "kafka-1:9092",
+          "--topic",
+          "orders",
+          "--describe"
+        ]
+      interval: 10s
+      timeout: 15s
+      retries: 5
 
   
   kafka-2:
@@ -73,7 +92,7 @@ services:
       environment:
       KAFKA_BROKER_ID: 2
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: SSL://kafka-2:19095,EXTERNAL://localhost:9094,EXTERNAL_SSL://localhost:9095
+      KAFKA_ADVERTISED_LISTENERS: SSL://kafka-2:19095,EXTERNAL://kafka-2:9094,EXTERNAL_SSL://kafka-2:9095
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SSL:SSL,EXTERNAL:PLAINTEXT,EXTERNAL_SSL:SSL
       KAFKA_INTER_BROKER_LISTENER_NAME: SSL
       KAFKA_SSL_KEYSTORE_FILENAME: kafka.server.keystore.jks
@@ -86,7 +105,7 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
     volumes:
-      - ./server_certs:/etc/kafka/secrets
+      - ./src/server_certs:/etc/kafka/secrets
 
 
   kafka-3:
@@ -104,7 +123,7 @@ services:
       environment:
       KAFKA_BROKER_ID: 3
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: SSL://kafka-3:19097,EXTERNAL://localhost:9096,EXTERNAL_SSL://localhost:9097
+      KAFKA_ADVERTISED_LISTENERS: SSL://kafka-3:19097,EXTERNAL://kafka-3:9096,EXTERNAL_SSL://kafka-3:9097
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: SSL:SSL,EXTERNAL:PLAINTEXT,EXTERNAL_SSL:SSL
       KAFKA_INTER_BROKER_LISTENER_NAME: SSL
       KAFKA_SSL_KEYSTORE_FILENAME: kafka.server.keystore.jks
@@ -117,13 +136,12 @@ services:
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
     volumes:
-      - ./server_certs:/etc/kafka/secrets
+      - ./src/server_certs:/etc/kafka/secrets
 
 
   kafka-init:
     image: confluentinc/cp-kafka:latest
     container_name: kafka_init
-    #command: [ "sh", "-c", "/create-topic.sh" ]
     entrypoint: ["sh","/create-topic.sh"]
     environment:
       TEST_TOPIC_NAME: orders
@@ -136,6 +154,18 @@ services:
         target: /create-topic.sh
     init: true
 
+
+  consumer:
+    depends_on:
+      kafka-1:
+        condition: service_healthy
+
+    build:
+      context: .
+      dockerfile: src/consumer/Dockerfile
+    container_name: consumer
+    networks:
+      - kafka_network
 
 networks:
   kafka_network:

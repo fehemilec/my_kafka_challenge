@@ -1,0 +1,4 @@
+kafka-python
+
+# type checking
+pydantic==2.3.0

@@ -2,5 +2,11 @@
 # The Python Worker is managed by Azure Functions platform
 # Manually managing azure-functions-worker may cause unexpected issues
 
-azure-functions
-kafka
+# core packages for azure functions
+azure-functions==1.11.2
+
+kafka-python==2.0.2
+aiokafka==0.11.0
+
+# type checking
+pydantic==2.3.0

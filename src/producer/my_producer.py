@@ -1,3 +1,5 @@
+import logging
+
 from pathlib import Path
 from kafka import KafkaProducer
 from kafka.errors import KafkaError
@@ -32,7 +34,10 @@ def get_kafka_producer_client(certs_path, broker: Broker):
 
 def send_message_json(producer_client, order):
 
-    producer_client.send("orders", order)
+    producer_client.send("orders", order.__dict__)
+    logging.info(
+        "Sending data package to Broker order: %s %s", order.orderId, order.price
+    )
     # Ensure all messages are sent before closing the producer
     producer_client.flush()
 
@@ -47,7 +52,7 @@ def send_message(message, host, port):
 
 def get_kafka_broker(broker_id, auth_required):
     brokers = {
-        "1": Broker("localhost", 9093 if auth_required else 9092, auth_required),
+        "1": Broker("kafka-1", 9093 if auth_required else 9092, auth_required),
         "2": Broker("localhost", 9095 if auth_required else 9094, auth_required),
         "3": Broker("localhost", 9097 if auth_required else 9096, auth_required),
     }

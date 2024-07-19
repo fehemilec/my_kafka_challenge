@@ -19,12 +19,16 @@ def main(req: func.HttpRequest) -> func.HttpResponse:
 
     try:
         payload = req.get_json()
-        order = Order(**payload).__dict__
+        order = Order(**payload)
         logging.info("Order %s", order)
 
-        abs_path = Path(__file__).parent.parent.parent
+        abs_path = Path(__file__).parent.parent
+        logging.info("Function Path: %s", abs_path)
 
         broker = get_kafka_broker("1", auth_required=True)
+        logging.info(
+            "Sending data package to Broker on: %s %s", broker.host, broker.port
+        )
         producer_client = get_kafka_producer_client(abs_path, broker)
 
         send_message_json(producer_client, order)

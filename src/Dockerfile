@@ -6,6 +6,9 @@ COPY src/requirements.txt /
 
 RUN pip install --no-cache-dir -r /requirements.txt
 
-ENV AzureWebJobsSecretStorageType=Files
-
 COPY  src/ /home/site/wwwroot 
+
+
+RUN pip install --no-cache-dir -r /requirements.txt
+
+ENV AzureWebJobsSecretStorageType=Files
